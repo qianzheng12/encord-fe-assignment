@@ -1,0 +1,12 @@
+.predictions-tab {
+  padding: 20px;
+  .table-container {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    .MuiTableHead-root {
+      background-color: #e8eaf6;
+    }
+    .MuiTableCell-root {
+      padding: 16px;
+    }
+  }
+}

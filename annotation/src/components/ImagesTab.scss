@@ -1,0 +1,20 @@
+.image-tab {
+  padding: 20px;
+  .upload-button {
+    margin-bottom: 20px;
+    background-color: #1976d2;
+    color: white;
+    &:hover {
+      background-color: #115293;
+    }
+  }
+  .table-container {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    .MuiTableHead-root {
+      background-color: #f5f5f5;
+    }
+    .MuiTableCell-root {
+      padding: 16px;
+    }
+  }
+}
