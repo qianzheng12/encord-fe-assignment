@@ -1,9 +1,31 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper} from '@mui/material';
 import PredictionDetails from './PredictionDetails';
 import './PredictionsTab.scss'
 
-function PredictionsTab({predictions}) {
+function PredictionsTab() {
+    const [predictions, setPredictions] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const predictionsResponse = await fetch('http://localhost:3000/predict');
+                const predictionsData = await predictionsResponse.json();
+                console.log(predictionsData);
+                setPredictions(predictionsData.map(pred => ({
+                    title: pred.title,
+                    description: pred.description,
+                    created_at: pred.created_at,
+                    image_path: pred.image_path,
+                    predictions: pred.predictions,
+                })));
+            } catch (error) {
+                console.error('Failed to fetch predictions', error);
+            }
+        };
+
+        fetchData();
+    }, [setPredictions]);
     return (
         <div className="predictions-tab">
             <TableContainer className="table-container" component={Paper}>

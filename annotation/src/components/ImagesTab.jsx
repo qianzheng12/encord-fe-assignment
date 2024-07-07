@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
     Button,
     Table,
@@ -7,7 +7,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
     Dialog,
     DialogActions,
     DialogContent,
@@ -62,11 +61,29 @@ const MOCK_PREDICTION_RESULT_ORANGE = [
     }
 ]
 
-function ImagesTab({images, setImages, setPredictions}) {
+function ImagesTab() {
     const [open, setOpen] = useState(false);
     const [currentImage, setCurrentImage] = useState(null);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+
+    const [images, setImages] = useState([]);
+
+    useEffect(() => {
+        // Ideally here should call API to fetch data, but since we don't have BE API ready, we just load local Json file in public
+        const fetchData = async () => {
+            try {
+                const imagesResponse = await fetch('/images.json');
+                const imagesData = await imagesResponse.json();
+                setImages(imagesData);
+            } catch (error) {
+                console.error('Failed to fetch data', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
 
     const handleOpen = useCallback((image) => {
         setOpen(true);
@@ -102,15 +119,14 @@ function ImagesTab({images, setImages, setPredictions}) {
         // NOTE: If we have API, we will call API with blob of the image file and upload the blob to either DB or S3
     }, [setImages]);
 
-    const handleSubmit = useCallback((image) => {
-        // Note: Should have called API to generate predictions result in DB
+    const handleSubmit = useCallback(async (image) => {
         let predictions;
-        if (currentImage.path_to_image === '/orange.jpg'){
-            predictions = MOCK_PREDICTION_RESULT_ORANGE
+        if (currentImage.path_to_image === '/orange.jpg') {
+            predictions = MOCK_PREDICTION_RESULT_ORANGE;
+        } else {
+            predictions = MOCK_PREDICTION_RESULT_APPLE;
         }
-        else{
-            predictions = MOCK_PREDICTION_RESULT_APPLE
-        }
+
         const prediction = {
             title,
             description,
@@ -118,9 +134,27 @@ function ImagesTab({images, setImages, setPredictions}) {
             image_path: currentImage.path_to_image,
             predictions: predictions
         };
-        setPredictions(prev => [...prev, prediction]);
+
+        // Post the prediction to JSON Server
+        try {
+            const response = await fetch('http://localhost:3000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(prediction)
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            await response.json();
+        } catch (error) {
+            console.error('Failed to post prediction:', error);
+        }
+
         handleClose();
-    }, [title, description, currentImage, setPredictions, handleClose]);
+    }, [title, description, currentImage, handleClose]);
+
     return (
         <div className='image-tab'>
             <Button className='upload-button' variant="contained" component="label">
